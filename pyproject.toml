@@ -17,6 +17,11 @@ ruff = "^0.5.7"
 pytest = "^8.3.2"
 pytest-cov = "^5.0.0"
 taskipy = "^1.13.0"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
 line-length = 79
@@ -30,13 +35,13 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT']
 preview = true
 quote-style = 'single'
 
+[tool.isort]
+line_length = 79
+extend_skip = ['migrations']
+
 [tool.pytest.ini_options]
 pythonpath = '.'
 addopts = '-p no:warnings'
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.taskipy.tasks]
 run = 'fastapi dev fast_zero/app.py'
@@ -44,4 +49,4 @@ pre_test = 'task lint'
 test = 'pytest --cov=fast_zero -vv'
 post_test = 'coverage html'
 lint = 'ruff check . && ruff check . --diff'
-format = 'ruff format .'
+format = 'ruff format . && isort .'

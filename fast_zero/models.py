@@ -1,11 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import func
-from sqlalchemy.orm import (
-    Mapped,  # Vai escolher o tipo ideal de dado no DB
-    mapped_column,  # Passar propriedades SQL para a tabela
-    registry,  # Para registrar os metadados das tabelas
-)
+from sqlalchemy.orm import Mapped, mapped_column, registry
 
 table_registry = registry()
 

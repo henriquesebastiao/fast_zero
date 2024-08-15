@@ -1,6 +1,6 @@
 """Os schemas fazem a validação dos dados usando Pydantic"""
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr
 
 
 class Message(BaseModel):
@@ -25,6 +25,9 @@ class UserPublic(BaseModel):
     id: int
     username: str
     email: EmailStr
+
+    # Altera o comportamento de model_validate
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UserList(BaseModel):
