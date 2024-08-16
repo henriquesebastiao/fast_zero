@@ -93,9 +93,10 @@ def test_try_get_user_with_not_found_user(client):
     assert response.json() == {'detail': 'User not found'}
 
 
-def test_update_user(client, user):
+def test_update_user(client, user, token):
     response = client.put(
-        '/users/1',
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'testuser2',
             'password': 'password2',
@@ -111,9 +112,10 @@ def test_update_user(client, user):
     }
 
 
-def test_try_update_user_with_not_found_user(client):
+def test_try_update_user_without_being_current(client, token):
     response = client.put(
         '/users/0',
+        headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'testuser3',
             'password': 'password3',
@@ -121,19 +123,44 @@ def test_try_update_user_with_not_found_user(client):
         },
     )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Not enough permission'}
 
 
-def test_user_delete(client, user):
-    response = client.delete('/users/1')
+def test_user_delete(client, user, token):
+    response = client.delete(
+        f'/users/{user.id}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_try_delete_user_with_not_found_user(client):
-    response = client.delete('/users/0')
+def test_try_delete_user_without_being_current(client, token):
+    response = client.delete(
+        '/users/0',
+        headers={'Authorization': f'Bearer {token}'},
+    )
 
-    assert response.status_code == HTTPStatus.NOT_FOUND
-    assert response.json() == {'detail': 'User not found'}
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json() == {'detail': 'Not enough permission'}
+
+
+def test_get_token(client, user):
+    """
+    Nesse teste, nós enviamos uma requisição POST
+    para o endpoint "/token" com um username e uma senha válidos.
+    Então, nós verificamos que a resposta contém um "access_token"
+    e um "token_type", que são os campos que esperamos de um JWT válido.
+    """
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    token = response.json()
+
+    assert response.status_code == HTTPStatus.OK
+    assert token['token_type'] == 'Bearer'
+    assert 'access_token' in token

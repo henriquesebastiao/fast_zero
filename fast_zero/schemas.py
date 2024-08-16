@@ -34,3 +34,8 @@ class UserList(BaseModel):
     """Retorna uma lista com todos os usuários, porém sem suas senhas"""
 
     users: list[UserPublic]
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str

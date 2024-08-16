@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 from fast_zero.app import app
 from fast_zero.database import get_session
 from fast_zero.models import User, table_registry
+from fast_zero.security import get_password_hash
 
 
 @pytest.fixture
@@ -44,9 +45,10 @@ def session():
 
 @pytest.fixture
 def user(session: Session):
+    password = 'password'
     user = User(
         username='testuser',
-        password='password',
+        password=get_password_hash(password),
         email='test@user.com',
     )
 
@@ -54,4 +56,25 @@ def user(session: Session):
     session.commit()
     session.refresh(user)
 
+    user.clean_password = password  # Monkey Path
+
+    # Retornamos a senha também em texto puro para a utilização no teste
+    # test_get_token, pois lá para realizar o login, a senha em texto puro
+    # deve ser eviada.
+
+    # Monkey patching é uma técnica em que modificamos ou estendemos
+    # o código em tempo de execução. Neste caso, estamos adicionando
+    # um novo atributo clean_password ao objeto
+    # user para armazenar a senha em texto puro.
+
     return user
+
+
+@pytest.fixture
+def token(client, user):
+    response = client.post(
+        '/token',
+        data={'username': user.email, 'password': user.clean_password},
+    )
+
+    return response.json()['access_token']
