@@ -39,3 +39,13 @@ class UserList(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class TokenData(BaseModel):
+    """
+    Esse schema será utilizado para tipificar os dados
+    extraídos do token JWT e garantir que temos um campo
+    username que será usado para identificar o usuário.
+    """
+
+    username: str | None = None

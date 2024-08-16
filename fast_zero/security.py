@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from fast_zero.database import get_session
 from fast_zero.models import User
+from fast_zero.schemas import TokenData
 
 pwd_context = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='token')
@@ -66,9 +67,12 @@ def get_current_user(
         # Em seguida, criamos um objeto TokenData com o username.
         if not email:
             raise credentials_exception
+        token_data = TokenData(username=email)
     except PyJWTError:
         raise credentials_exception
-    user_db = session.scalar(select(User).where(User.email == email))
+    user_db = session.scalar(
+        select(User).where(User.email == token_data.username)
+    )
 
     if not user_db:
         raise credentials_exception
