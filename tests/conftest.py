@@ -4,7 +4,7 @@ from factory.fuzzy import FuzzyChoice
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session  # Uma interface entre o código e o DB
-from sqlalchemy.pool import StaticPool
+from testcontainers.postgres import PostgresContainer
 
 from fast_zero.app import app
 from fast_zero.database import get_session
@@ -51,15 +51,18 @@ def client(session):
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def session():
-    # Cria um pool de conexões com db.
-    engine = create_engine(
-        'sqlite:///:memory:',
-        connect_args={'check_same_thread': False},
-        poolclass=StaticPool,
-    )
+@pytest.fixture(scope='session')
+def engine():
+    with PostgresContainer('postgres:16', driver='psycopg') as postgres:
+        # Cria um pool de conexões com db.
+        _engine = create_engine(postgres.get_connection_url())
 
+        with _engine.begin():
+            yield _engine
+
+
+@pytest.fixture
+def session(engine):
     # Os testes não dependem dfas migrações do alembic.
     # As tabelas são criadas todas de uma vez.
 

@@ -1,0 +1,28 @@
+services:
+  postgres-fast_zero:
+    container_name: postgres-fast_zero
+    image: postgres:16.4-alpine
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    environment:
+      - PGPORT=5435
+    ports:
+      - "5435:5435"
+  
+  fastapi-fast_zero:
+    container_name: fastapi-fast_zero
+    image: fastzero_app
+    entrypoint: ./entrypoint.sh
+    volumes:
+      - ./fast_zero:/fast_zero
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8092:8000"
+    depends_on:
+      - postgres-fast_zero
+    env_file:
+      - .env
