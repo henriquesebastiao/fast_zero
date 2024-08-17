@@ -1,5 +1,6 @@
 import factory
 import pytest
+from factory.fuzzy import FuzzyChoice
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session  # Uma interface entre o código e o DB
@@ -7,7 +8,7 @@ from sqlalchemy.pool import StaticPool
 
 from fast_zero.app import app
 from fast_zero.database import get_session
-from fast_zero.models import User, table_registry
+from fast_zero.models import Todo, TodoState, User, table_registry
 from fast_zero.security import get_password_hash
 
 
@@ -21,6 +22,16 @@ class UserFactory(factory.Factory):
     # o username ter sido criado, pois depende de saber dele.
     email = factory.LazyAttribute(lambda obj: f'{obj.username}@test.com')
     password = factory.LazyAttribute(lambda obj: f'{obj.username}_password')
+
+
+class TodoFactory(factory.Factory):
+    class Meta:
+        model = Todo
+
+    title = factory.Faker('text')
+    description = factory.Faker('text')
+    state = FuzzyChoice(TodoState)
+    user_id = 1
 
 
 @pytest.fixture
@@ -48,6 +59,10 @@ def session():
         connect_args={'check_same_thread': False},
         poolclass=StaticPool,
     )
+
+    # Os testes não dependem dfas migrações do alembic.
+    # As tabelas são criadas todas de uma vez.
+
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:

@@ -1,6 +1,10 @@
 """Os schemas fazem a validação dos dados usando Pydantic"""
 
+from datetime import datetime
+
 from pydantic import BaseModel, ConfigDict, EmailStr
+
+from fast_zero.models import TodoState
 
 
 class Message(BaseModel):
@@ -49,3 +53,25 @@ class TokenData(BaseModel):
     """
 
     username: str | None = None
+
+
+class TodoSchema(BaseModel):
+    title: str
+    description: str
+    state: TodoState
+
+
+class TodoPublic(TodoSchema):
+    created_at: datetime
+    updated_at: datetime
+    id: int
+
+
+class TodoList(BaseModel):
+    todos: list[TodoPublic]
+
+
+class TodoUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    state: TodoState | None = None
