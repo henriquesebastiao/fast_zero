@@ -31,15 +31,20 @@ def login_for_access_token(
     session: T_Session,
     form_data: T_OAuth2Form,
 ):
+    invalid_credentials_exception = HTTPException(
+        status_code=HTTPStatus.BAD_REQUEST,
+        detail='Incorrect email or password',
+    )
+
     # Procura um usuário na base de dados com o email informado
     user = session.scalar(select(User).where(User.email == form_data.username))
 
-    # Caso o usuário não exista ou a senha esteja errada, retorna um erro
-    if not user or not verify_password(form_data.password, user.password):
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Incorrect email or password',
-        )
+    # Retorna um erro caso o usuário não exista
+    if not user:
+        raise invalid_credentials_exception
+    # Retorna um erro caso a senha esteja errada
+    elif not verify_password(form_data.password, user.password):
+        raise invalid_credentials_exception
 
     # Caso tudo funcione um token JWT é criado
     access_token = create_access_token(data={'sub': user.email})
