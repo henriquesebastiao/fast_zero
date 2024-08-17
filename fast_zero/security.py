@@ -4,7 +4,7 @@ from http import HTTPStatus
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import decode, encode
-from jwt.exceptions import PyJWTError
+from jwt.exceptions import ExpiredSignatureError, PyJWTError
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -52,6 +52,12 @@ def get_current_user(
         headers={'WWW-Authenticate': 'Bearer'},
     )
 
+    expired_token_exception = HTTPException(
+        status_code=HTTPStatus.UNAUTHORIZED,
+        detail='Your token has expired',
+        headers={'WWW-Authenticate': 'Bearer'},
+    )
+
     try:
         # Tentamos decodificar o token JWT usando a chave secreta
         # e o algoritmo especificado.
@@ -70,8 +76,12 @@ def get_current_user(
         if not email:
             raise credentials_exception
         token_data = TokenData(username=email)
+
+    except ExpiredSignatureError:
+        raise expired_token_exception
     except PyJWTError:
         raise credentials_exception
+
     user_db = session.scalar(
         select(User).where(User.email == token_data.username)
     )

@@ -27,7 +27,7 @@ def test_create_user_with_username_already_exists(client, user):
     response = client.post(
         '/users/',
         json={
-            'username': 'testuser',
+            'username': user.username,
             'password': 'password',
             'email': 'test@email.com',
         },
@@ -44,7 +44,7 @@ def test_create_user_with_email_already_exists(client, user):
         json={
             'username': 'test_user',
             'password': 'password',
-            'email': 'test@user.com',
+            'email': user.email,
         },
     )
 
@@ -66,12 +66,12 @@ def test_read_users_with_user(client, user):
 
 
 def test_get_user(client, user):
-    response = client.get('/users/1')
+    response = client.get(f'/users/{user.id}')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {
-        'username': 'testuser',
-        'email': 'test@user.com',
-        'id': 1,
+        'username': user.username,
+        'email': user.email,
+        'id': user.id,
     }
 
 
@@ -100,9 +100,9 @@ def test_update_user(client, user, token):
     }
 
 
-def test_try_update_user_without_being_current(client, token):
+def test_try_update_user_without_being_current(client, token, other_user):
     response = client.put(
-        '/users/0',
+        f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
         json={
             'username': 'testuser3',
@@ -125,9 +125,9 @@ def test_user_delete(client, user, token):
     assert response.json() == {'message': 'User deleted'}
 
 
-def test_try_delete_user_without_being_current(client, token):
+def test_try_delete_user_without_being_current(client, token, other_user):
     response = client.delete(
-        '/users/0',
+        f'/users/{other_user.id}',
         headers={'Authorization': f'Bearer {token}'},
     )
 
