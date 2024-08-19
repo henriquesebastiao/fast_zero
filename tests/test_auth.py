@@ -100,10 +100,10 @@ def test_token_expired_dont_refresh(client, user):
         assert response.status_code == HTTPStatus.OK
         token = response.json()['access_token']
 
-    with freeze_time('2023-07-14 12:31:00'):
+    with freeze_time('2023-07-14 12:40:00'):
         # Usa o token as 12:31 horas
-        response = client.put(
-            '/users/refresh_token',
+        response = client.post(
+            '/auth/refresh_token',
             headers={'Authorization': f'Bearer {token}'},
         )
 
