@@ -6,3 +6,5 @@
 [![codecov](https://img.shields.io/badge/fastapi-0.112.1-blue)]()
 
 Uma API simples de lista de tarefas feita em Python com FastAPI para estudo com o curso [FastAPI do Zero](https://fastapidozero.dunossauro.com/).
+
+Link do deploy: [https://fast-zero.henriquesebastiao.com/](https://fast-zero.henriquesebastiao.com/)
